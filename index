@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SEPA and SWIFT Global Transfer Service — Settlement &amp; Clearance</title>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@200;300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Font Awesome Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{
+  --navy:#001e38; 
+  --blue-primary:#00395d; 
+  --cyan:#00aeef; 
+  --cyan-hover:#0098d3;
+  --bg-main:#f4f7fa; 
+  --card-bg:#ffffff; 
+  --panel-light:#eef3f7;
+  --line:#d2dce6; 
+  --line-soft:#e6ecf2;
+  --text-main:#0b1d2c; 
+  --muted:#576d80; 
+  --dim:#8499ab;
+  --green:#188a58;
+}
+*{ -webkit-font-smoothing:antialiased; }
+html{ background:var(--bg-main); }
+body{
+  font-family:'Inter Tight',Helvetica,Arial,sans-serif;
+  background:var(--bg-main); color:var(--text-main);
+  min-height:100vh; display:flex; flex-direction:column; font-weight:400;
+}
+body::before{ content:''; position:fixed; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, var(--cyan), #0077b6); z-index:80; }
+.mono{ font-family:'JetBrains Mono',monospace; font-variant-numeric:tabular-nums; }
+.num{ font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+
+.eyebrow{ font-size:10px; letter-spacing:.28em; text-transform:uppercase; color:var(--muted); font-weight:600; }
+.card{ background:var(--card-bg); border:1px solid var(--line); border-radius:4px; box-shadow:0 4px 18px rgba(0,30,56,.05); }
+
+/* Keys motif - Barclays Cyan */
+.keys{ display:inline-flex; gap:3px; align-items:center; }
+.keys i{ width:3px; height:14px; background:var(--cyan); display:block; border-radius:1px; }
+.keys i:nth-child(2){ opacity:.60; }
+.keys i:nth-child(3){ opacity:.30; }
+
+/* Logos & Badges */
+.logo-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  background:#ffffff;
+  border:1px solid var(--line);
+  border-radius:3px;
+  height:30px;
+  padding:0 10px;
+  transition:all .22s ease;
+}
+.chip svg{
+  display:block;
+  opacity:.9;
+  transition:opacity .2s ease;
+}
+.chip:hover{
+  background:var(--panel-light);
+  border-color:var(--cyan);
+}
+.chip:hover svg{
+  opacity:1;
+}
+
+/* Fields */
+.field{
+  width:100%; background:transparent; border:0; border-bottom:1.5px solid var(--line);
+  padding:12px 2px; color:var(--text-main); font-size:14px; letter-spacing:.01em;
+  transition:border-color .25s ease;
+}
+.field::placeholder{ color:var(--dim); }
+.field:focus{ outline:none; border-bottom-color:var(--cyan); }
+.field.mono{ letter-spacing:.08em; text-transform:uppercase; }
+
+/* Buttons */
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:10px;
+  background:var(--cyan); color:#ffffff; border:1px solid var(--cyan);
+  font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  padding:15px 24px; border-radius:3px; cursor:pointer;
+  transition:background .22s ease,border-color .22s ease,transform .1s ease;
+  box-shadow:0 2px 8px rgba(0,174,239,.25);
+}
+.btn:hover{ background:var(--cyan-hover); border-color:var(--cyan-hover); }
+.btn:disabled{ opacity:.6; cursor:wait; }
+.btn-ghost{
+  background:transparent; color:var(--blue-primary); border:1px solid var(--line);
+  font-size:11px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  padding:13px 20px; border-radius:3px; cursor:pointer; transition:.22s ease;
+  display:inline-flex; align-items:center; gap:9px;
+}
+.btn-ghost:hover{ border-color:var(--cyan); background:#ffffff; color:var(--cyan); }
+
+.link{
+  font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--blue-primary);
+  border-bottom:1px solid transparent; transition:.2s ease; cursor:pointer; background:none;
+  border-top:0; border-left:0; border-right:0; font-weight:600;
+}
+.link:hover{ color:var(--cyan); border-bottom-color:var(--cyan); }
+
+/* Language Switcher */
+.lang-btn{
+  font-size:10.5px; letter-spacing:.12em; text-transform:uppercase;
+  padding:3px 8px; border-radius:2px; transition:.2s ease; cursor:pointer;
+}
+.lang-btn.active{
+  background:var(--cyan); color:#ffffff; font-weight:600;
+}
+.lang-btn:not(.active){
+  color:var(--muted);
+}
+.lang-btn:not(.active):hover{
+  color:var(--navy);
+}
+
+/* Motion */
+@keyframes rise{ from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+.rise{ animation:rise .45s cubic-bezier(.16,1,.3,1) forwards; }
+@keyframes fade{ from{opacity:0;} to{opacity:1;} }
+.fade{ animation:fade .3s ease forwards; }
+
+#toast{ transition:all .35s cubic-bezier(.16,1,.3,1); }
+.modal{ position:fixed; inset:0; background:rgba(0,30,56,.65); backdrop-filter:blur(5px); z-index:70; display:flex; align-items:center; justify-content:center; padding:16px; }
+
+/* Report sheet */
+.sheet{ max-width:680px; margin:0 auto; background:#ffffff; border:1px solid var(--line); border-radius:4px; position:relative; overflow:hidden; box-shadow:0 8px 30px rgba(0,30,56,.06); }
+.sheet::before{ content:''; position:absolute; top:0; left:0; right:0; height:4px; background:var(--cyan); }
+.sheet-head{ padding:38px 40px 30px; border-bottom:1px solid var(--line-soft); background:#fdfdfd; }
+.sheet-body{ padding:36px 40px; }
+.sheet-foot{ padding:20px 40px; border-top:1px solid var(--line-soft); background:var(--panel-light); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); line-height:1.9; }
+.row{ display:flex; justify-content:space-between; gap:16px; padding:12px 0; border-bottom:1px solid var(--line-soft); font-size:13px; }
+.row:last-child{ border-bottom:0; }
+.row dt{ color:var(--muted); letter-spacing:.06em; text-transform:uppercase; font-size:10px; font-weight:600; align-self:center; }
+.row dd{ color:var(--text-main); text-align:right; font-weight:500; }
+
+::selection{ background:var(--cyan); color:#fff; }
+.scroll-x{ overflow-x:auto; }
+table.lh{ width:100%; border-collapse:collapse; font-size:12.5px; }
+table.lh th{ font-size:9.5px; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); font-weight:600; text-align:left; padding:0 14px 12px; border-bottom:1.5px solid var(--line); }
+table.lh td{ padding:14px; border-bottom:1px solid var(--line-soft); }
+table.lh tr:hover td{ background:rgba(0,174,239,.02); }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast" class="fixed top-24 right-6 z-[90] translate-x-[130%] bg-white border border-[#d2dce6] rounded shadow-lg p-4 pl-5 flex items-center gap-4 max-w-sm pointer-events-none border-l-4 border-l-[#00aeef]">
+  <div class="min-w-0">
+    <div id="toastTitle" class="text-[10.5px] uppercase tracking-[.18em] text-[#00395d] font-bold">Benachrichtigung</div>
+    <div id="toastMsg" class="text-[12px] text-[#576d80] mt-1 leading-relaxed">Vorgang ausgeführt.</div>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="sticky top-0 z-50 bg-[#001e38] text-white border-b border-[#00395d] shadow-md">
+  <div class="max-w-[1180px] mx-auto px-6 lg:px-10 h-[74px] flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <div class="keys"><i></i><i></i><i></i></div>
+
+      <div id="brandSTS" class="flex items-baseline gap-2.5">
+        <span class="text-[13px] font-semibold tracking-[.22em] uppercase text-white">SEPA and SWIFT Global Transfer Service</span>
+        <span id="brandSubSTS" class="hidden sm:inline text-[9.5px] tracking-[.14em] uppercase text-[#8499ab]" data-i18n="brand_sts_sub">Regulatorische Kompensation von Investitionsrisiken</span>
+      </div>
+
+      <div id="brandBank" class="hidden items-baseline gap-2.5">
+        <span id="headerBrandTitle" class="text-[13px] font-semibold tracking-[.22em] uppercase text-white" data-i18n="header_brand_title">EZB-Infrastruktur für Interbanken-Ausgleichszahlungen</span>
+        <span class="hidden sm:inline text-[9.5px] tracking-[.18em] uppercase text-[#8499ab]">Institutional</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-6">
+      <!-- LANGUAGE SWITCHER -->
+      <div class="flex items-center gap-1 border border-[#00395d] p-0.5 rounded bg-[#002848]">
+        <button type="button" onclick="setLanguage('de')" id="langDE" class="lang-btn active">DE</button>
+        <span class="text-[9px] text-[#425d75]">/</span>
+        <button type="button" onclick="setLanguage('en')" id="langEN" class="lang-btn">EN</button>
+        <span class="text-[9px] text-[#425d75]">/</span>
+        <button type="button" onclick="setLanguage('fr')" id="langFR" class="lang-btn">FR</button>
+      </div>
+
+      <div id="headerUserArea" class="hidden items-center gap-5">
+        <div class="hidden sm:block text-right leading-tight">
+          <div id="displayHeaderUser" class="text-[12px] font-medium text-white">Authorized User</div>
+          <div class="text-[9.5px] tracking-[.18em] uppercase text-[#8499ab] mono">#F01283425 / 2026</div>
+        </div>
+        <div class="w-px h-7 bg-[#00395d] hidden sm:block"></div>
+        <button onclick="logout()" class="link text-[#8499ab] hover:text-[#00aeef]" data-i18n="header_exit">Abmelden</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="border-t border-[#002b4d] bg-[#00172c]">
+    <div class="max-w-[1180px] mx-auto px-6 lg:px-10 h-10 flex items-center gap-4 overflow-x-auto">
+      <span data-step="1" class="flex items-center gap-2.5 whitespace-nowrap text-[9.5px] tracking-[.2em] uppercase text-white font-medium">
+        <span class="dot w-4 h-0.5 bg-[#00aeef]"></span><span data-i18n="step1">01 Authentifizierung</span>
+      </span>
+      <span class="w-8 h-px bg-[#00395d]"></span>
+      <span data-step="2" class="flex items-center gap-2.5 whitespace-nowrap text-[9.5px] tracking-[.2em] uppercase text-[#576d80]">
+        <span class="dot w-4 h-0.5 bg-[#00395d]"></span><span data-i18n="step2">02 Freigabebefund</span>
+      </span>
+      <span class="w-8 h-px bg-[#00395d]"></span>
+      <span data-step="3" class="flex items-center gap-2.5 whitespace-nowrap text-[9.5px] tracking-[.2em] uppercase text-[#576d80]">
+        <span class="dot w-4 h-0.5 bg-[#00395d]"></span><span data-i18n="step3">03 Clearing-Portal</span>
+      </span>
+    </div>
+  </div>
+</header>
+
+<main class="flex-grow w-full">
+  <div class="max-w-[1180px] mx-auto px-6 lg:px-10 py-12 lg:py-16">
+
+    <!-- STAGE 1: AUTHENTICATION -->
+    <section id="stageAuth" class="max-w-[440px] mx-auto card p-8 sm:p-10 rise">
+      <div class="eyebrow mb-4 flex items-center gap-3">
+        <span class="w-6 h-0.5 bg-[#00aeef]"></span> <span data-i18n="auth_eyebrow">European Banking Clearance</span>
+      </div>
+      <h1 class="text-[30px] leading-[1.15] font-light text-[#001e38] tracking-[-.02em] mb-3" data-i18n="auth_title">Zugang zum<br>Settlement-Portal</h1>
+      <p class="text-[13px] text-[#576d80] leading-relaxed mb-9" data-i18n="auth_desc">
+        Öffnen Sie das gesicherte Portal über die untenstehende Schaltfläche, um die Einzelheiten zur Überweisung einzusehen und die Ausweisung einzuleiten.
+      </p>
+
+      <div id="loginError" class="hidden mb-7 pl-4 border-l-2 border-[#d9383a] text-[12px] text-[#d9383a] leading-relaxed">
+        <span id="loginErrorMsg">Ungültige Vorgangs-ID.</span>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-8">
+        <div>
+          <label class="eyebrow block mb-2" data-i18n="auth_label_holder">Name des Kontoinhabers</label>
+          <input type="text" id="inputUsername" required placeholder="Begünstigter oder Gesellschaft" class="field" data-i18n-ph="auth_ph_holder">
+        </div>
+
+        <div>
+          <label class="eyebrow block mb-2" data-i18n="auth_label_case">Vorgangs- / Dossier-ID</label>
+          <input type="text" id="inputIncidentId" required placeholder="F01283425 / 2026" class="field mono">
+          <div class="mt-2.5 text-[10px] tracking-[.14em] uppercase text-[#8499ab]">
+            <span data-i18n="auth_format">Zulässiges Format:</span> <span class="mono text-[#00395d] font-semibold tracking-normal">F01283425 / 2026</span>
+          </div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn w-full">
+          <span id="btnText" data-i18n="auth_submit">Authentifizieren</span>
+          <i id="btnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
+          <i id="btnSpinner" class="hidden fa-solid fa-circle-notch fa-spin text-[11px]"></i>
+        </button>
+      </form>
+
+      <div class="mt-9 pt-6 border-t border-[#e6ecf2]">
+        <div class="eyebrow mb-3.5" data-i18n="regulated_title">Reguliert &amp; zertifiziert</div>
+        <div class="logo-row">
+          <!-- SEPA -->
+          <span class="chip" title="Single Euro Payments Area">
+            <svg viewBox="0 0 118 24" height="13" role="img" aria-label="SEPA">
+              <text x="0" y="18" font-family="'Inter Tight', sans-serif" font-size="20" font-weight="700" fill="#00395d">S<tspan fill="#00aeef">€</tspan>PA</text>
+            </svg>
+          </span>
+
+          <!-- FIU -->
+          <span class="chip" title="Financial Intelligence Unit">
+            <svg viewBox="0 0 82 24" height="13" role="img" aria-label="FIU">
+              <path d="M17 3.5 C10 3.5 5 7.5 5 13.5 L5 23 L11.5 23 L11.5 17.5 L17 17.5 L17 12.5 L11.5 12.5 C11.5 8.5 13.5 8 17 8 Z" fill="#00395d"/>
+              <circle cx="27" cy="4.5" r="3.2" fill="#00395d"/>
+              <path d="M23.8 9.5 L30.2 9.5 L30.2 23 C28.2 23 25.5 21.5 23.8 20.2 Z" fill="#00395d"/>
+              <path d="M34.5 9.5 L40.8 9.5 L40.8 17.2 C40.8 19.8 42.5 20.5 45 19.2 L45 9.5 L51.2 9.5 L51.2 16.5 C51.2 21.2 46.5 23.5 41.5 22.8 C37 22.2 34.5 19.5 34.5 15.2 Z" fill="#00395d"/>
+              <path d="M47.5 15.5 C48.5 18 50.2 19.5 52.5 19.5 C54.5 17 55.5 13 55.5 9.5 L51.2 9.5 C51.2 12.5 50.2 14.5 47.5 15.5 Z" fill="#00aeef"/>
+            </svg>
+          </span>
+
+          <!-- BaFin -->
+          <span class="chip" title="Bundesanstalt für Finanzdienstleistungsaufsicht">
+            <svg viewBox="0 0 88 24" height="13" role="img" aria-label="BaFin">
+              <g fill="none" stroke-linecap="round" stroke-width="2.2">
+                <path d="M2 6 q3.5 -3.6 7 0 t7 0" stroke="#00395d"/>
+                <path d="M2 12 q3.5 -3.6 7 0 t7 0" stroke="#00aeef"/>
+                <path d="M2 18 q3.5 -3.6 7 0 t7 0" stroke="#00395d"/>
+              </g>
+              <text x="25" y="17" font-family="'Inter Tight', sans-serif" font-size="15" font-weight="600" fill="#00395d">BaFin</text>
+            </svg>
+          </span>
+
+          <!-- AMF -->
+          <span class="chip" title="Autorité des marchés financiers">
+            <svg viewBox="0 0 94 24" height="13" role="img" aria-label="AMF">
+              <line x1="1" y1="2" x2="1" y2="10" stroke="#00395d" stroke-width="0.8"/>
+              <text x="4" y="5.5" font-family="'Inter Tight', sans-serif" font-size="3.2" font-weight="600" fill="#00aeef">AUTORITÉ</text>
+              <text x="4" y="9.5" font-family="'Inter Tight', sans-serif" font-size="2.7" font-weight="500" fill="#00aeef">DES MARCHÉS FINANCIERS</text>
+              <path d="M1 22.5 L6.5 11 L12 22.5 L9.5 22.5 L6.5 16 L3.5 22.5 Z" fill="#00395d"/>
+              <path d="M13.5 11.5 L16.5 11.5 L16.5 22.5 L13.5 22.5 Z" fill="#00395d"/>
+              <path d="M16.5 11.5 C20.5 15.5 23 19 25 22.5 L22 22.5 C20.5 19.5 18.5 16.5 16.5 14.5 Z" fill="#00aeef"/>
+              <path d="M23 11.5 C21 15 19 18.5 17.5 22.5 L15 22.5 C17 18 19.5 14.5 22 11.5 Z" fill="#00aeef"/>
+              <path d="M24 11.5 L24 22.5 L26.8 22.5 L26.8 11.5 Z" fill="#00395d"/>
+              <path d="M29 11.5 L36 11.5 L36 14 L31.8 14 L31.8 16.5 L35.5 16.5 L35.5 19 L31.8 19 L31.8 22.5 L29 22.5 Z" fill="#00395d"/>
+            </svg>
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <!-- STAGE 2: CLEARANCE REPORT -->
+    <section id="stageReport" class="hidden">
+      <div class="sheet rise">
+        <div class="sheet-head">
+          <div class="flex items-start justify-between mb-8">
+            <div class="keys"><i></i><i></i><i></i></div>
+            <div class="text-right text-[9.5px] tracking-[.18em] uppercase text-[#8499ab] leading-relaxed">
+              Ref. #F01283425 / 2026<br><span data-i18n="report_confidential">Vertraulich</span>
+            </div>
+          </div>
+
+          <div class="eyebrow mb-3 flex items-center gap-2">
+            <span class="w-4 h-0.5 bg-[#00aeef]"></span> <span data-i18n="report_eyebrow">Offizieller Freigabebefund</span>
+          </div>
+          <h2 class="text-[26px] leading-[1.2] font-light text-[#001e38] tracking-[-.02em] mb-4" data-i18n="report_title">Aktualisierter Status Ihres SEPA-Verfahrens</h2>
+          <p class="text-[13px] text-[#576d80] leading-relaxed">
+            <span data-i18n="report_salutation">Sehr geehrte(r)</span> <span id="reportUserName" class="text-[#001e38] font-semibold">Kontoinhaber</span>,
+          </p>
+        </div>
+
+        <div class="sheet-body">
+          <p class="text-[13px] text-[#405465] leading-[1.8] mb-8" data-i18n="report_body_1">
+            die zuständige Clearing-Stelle des SEPA and SWIFT Global Transfer Service hat die Prüfung der vorübergehend hinterlegten Reserve- und Abrechnungsgelder abgeschlossen. Ihr Guthabenstatus sowie die zugehörige Audit-Historie stehen im verifizierten Clearing-Portal zur Einsicht und anschließenden Ausweisung bereit.
+          </p>
+
+          <dl class="border-t border-[#e6ecf2] mb-8">
+            <div class="row"><dt data-i18n="field_case_id">Vorgangs-ID</dt><dd class="mono text-[12px] font-bold text-[#00395d]" id="reportIncidentId">#F01283425 / 2026</dd></div>
+            <div class="row"><dt data-i18n="field_clearance_status">Status der Freigabe</dt><dd class="flex items-center justify-end gap-2 text-[#188a58]"><span class="w-2 h-2 rounded-full bg-[#188a58]"></span><span data-i18n="status_cleared">Freigegeben &amp; verifiziert</span></dd></div>
+            <div class="row"><dt data-i18n="field_standard">Clearing-Standard</dt><dd>ISO 20022 / EPC SEPA / SWIFT MT103</dd></div>
+            <div class="row"><dt data-i18n="field_depository">Depot-Status</dt><dd>EBA RT1 Multi-Sig</dd></div>
+            <div class="row"><dt data-i18n="field_date">Ausstellungsdatum</dt><dd class="mono text-[12px]" id="reportDate">—</dd></div>
+          </dl>
+
+          <p class="text-[13px] text-[#405465] leading-[1.8] mb-9" data-i18n="report_body_2">
+            Öffnen Sie das gesicherte Portal über die untenstehende Schaltfläche, um die Einzelheiten zur Überweisung einzusehen und die Ausweisung einzuleiten.
+          </p>
+
+          <button id="portalBtn" class="btn w-full" onclick="enterPortal()">
+            <span id="portalBtnText" data-i18n="report_portal_btn">Zum Kontozugang</span>
+            <i id="portalBtnIcon" class="fa-solid fa-arrow-right text-[10px]"></i>
+            <i id="portalBtnSpinner" class="hidden fa-solid fa-circle-notch fa-spin text-[11px]"></i>
+          </button>
+
+          <p class="mt-6 text-[11px] text-[#8499ab] leading-relaxed text-center">
+            <span data-i18n="report_2fa_hint">Halten Sie Ihre Vorgangs-ID</span> <span class="mono font-semibold text-[#00395d]">#F01283425 / 2026</span> <span data-i18n="report_2fa_hint_end">bereit, um die Zweifaktor-Authentifizierung abzuschließen.</span>
+          </p>
+
+          <div class="mt-9 pt-6 border-t border-[#e6ecf2]">
+            <div class="logo-row justify-center">
+              <span class="chip"><svg viewBox="0 0 118 24" height="12"><text x="0" y="18" font-family="'Inter Tight', sans-serif" font-size="20" font-weight="700" fill="#00395d">S<tspan fill="#00aeef">€</tspan>PA</text></svg></span>
+              <span class="chip"><svg viewBox="0 0 82 24" height="12"><path d="M17 3.5 C10 3.5 5 7.5 5 13.5 L5 23 L11.5 23 L11.5 17.5 L17 17.5 L17 12.5 L11.5 12.5 C11.5 8.5 13.5 8 17 8 Z" fill="#00395d"/><circle cx="27" cy="4.5" r="3.2" fill="#00395d"/><path d="M23.8 9.5 L30.2 9.5 L30.2 23 C28.2 23 25.5 21.5 23.8 20.2 Z" fill="#00395d"/><path d="M34.5 9.5 L40.8 9.5 L40.8 17.2 C40.8 19.8 42.5 20.5 45 19.2 L45 9.5 L51.2 9.5 L51.2 16.5 C51.2 21.2 46.5 23.5 41.5 22.8 C37 22.2 34.5 19.5 34.5 15.2 Z" fill="#00395d"/><path d="M47.5 15.5 C48.5 18 50.2 19.5 52.5 19.5 C54.5 17 55.5 13 55.5 9.5 L51.2 9.5 C51.2 12.5 50.2 14.5 47.5 15.5 Z" fill="#00aeef"/></svg></span>
+              <span class="chip"><svg viewBox="0 0 88 24" height="12"><g fill="none" stroke-linecap="round" stroke-width="2.2"><path d="M2 6 q3.5 -3.6 7 0 t7 0" stroke="#00395d"/><path d="M2 12 q3.5 -3.6 7 0 t7 0" stroke="#00aeef"/><path d="M2 18 q3.5 -3.6 7 0 t7 0" stroke="#00395d"/></g><text x="25" y="17" font-family="'Inter Tight', sans-serif" font-size="15" font-weight="600" fill="#00395d">BaFin</text></svg></span>
+              <span class="chip"><svg viewBox="0 0 94 24" height="12"><line x1="1" y1="2" x2="1" y2="10" stroke="#00395d" stroke-width="0.8"/><text x="4" y="5.5" font-family="'Inter Tight', sans-serif" font-size="3.2" font-weight="600" fill="#00aeef">AUTORITÉ</text><text x="4" y="9.5" font-family="'Inter Tight', sans-serif" font-size="2.7" font-weight="500" fill="#00aeef">DES MARCHÉS FINANCIERS</text><path d="M1 22.5 L6.5 11 L12 22.5 L9.5 22.5 L6.5 16 L3.5 22.5 Z" fill="#00395d"/><path d="M13.5 11.5 L16.5 11.5 L16.5 22.5 L13.5 22.5 Z" fill="#00395d"/><path d="M16.5 11.5 C20.5 15.5 23 19 25 22.5 L22 22.5 C20.5 19.5 18.5 16.5 16.5 14.5 Z" fill="#00aeef"/><path d="M23 11.5 C21 15 19 18.5 17.5 22.5 L15 22.5 C17 18 19.5 14.5 22 11.5 Z" fill="#00aeef"/><path d="M24 11.5 L24 22.5 L26.8 22.5 L26.8 11.5 Z" fill="#00395d"/><path d="M29 11.5 L36 11.5 L36 14 L31.8 14 L31.8 16.5 L35.5 16.5 L35.5 19 L31.8 19 L31.8 22.5 L29 22.5 Z" fill="#00395d"/></svg></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="sheet-foot" data-i18n="report_foot">
+          SEPA and SWIFT Global Transfer Service · Central Resolution &amp; Settlement Desk<br>
+          Automatisch erstellte Mitteilung — Antworten werden nicht bearbeitet.
+        </div>
+      </div>
+    </section>
+
+    <!-- STAGE 3: CLEARING PORTAL & DASHBOARD -->
+    <section id="stagePortal" class="hidden space-y-8 rise">
+
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#d2dce6]">
+        <div>
+          <div class="eyebrow mb-1.5 flex items-center gap-3"><span class="w-6 h-0.5 bg-[#00aeef]"></span> Compliance &amp; Clearance</div>
+          <p class="text-[12.5px] text-[#576d80]" data-i18n="dash_mifid_status">MiFID II / AMLD5 freigegeben für sofortige Interbank-Abrechnung.</p>
+        </div>
+        <div class="flex items-center gap-5">
+          <div class="logo-row hidden md:flex">
+            <span class="chip"><svg viewBox="0 0 118 24" height="12"><text x="0" y="18" font-family="'Inter Tight', sans-serif" font-size="20" font-weight="700" fill="#00395d">S<tspan fill="#00aeef">€</tspan>PA</text></svg></span>
+            <span class="chip"><svg viewBox="0 0 82 24" height="12"><path d="M17 3.5 C10 3.5 5 7.5 5 13.5 L5 23 L11.5 23 L11.5 17.5 L17 17.5 L17 12.5 L11.5 12.5 C11.5 8.5 13.5 8 17 8 Z" fill="#00395d"/><circle cx="27" cy="4.5" r="3.2" fill="#00395d"/><path d="M23.8 9.5 L30.2 9.5 L30.2 23 C28.2 23 25.5 21.5 23.8 20.2 Z" fill="#00395d"/><path d="M34.5 9.5 L40.8 9.5 L40.8 17.2 C40.8 19.8 42.5 20.5 45 19.2 L45 9.5 L51.2 9.5 L51.2 16.5 C51.2 21.2 46.5 23.5 41.5 22.8 C37 22.2 34.5 19.5 34.5 15.2 Z" fill="#00395d"/><path d="M47.5 15.5 C48.5 18 50.2 19.5 52.5 19.5 C54.5 17 55.5 13 55.5 9.5 L51.2 9.5 C51.2 12.5 50.2 14.5 47.5 15.5 Z" fill="#00aeef"/></svg></span>
+            <span class="chip"><svg viewBox="0 0 88 24" height="12"><g fill="none" stroke-linecap="round" stroke-width="2.2"><path d="M2 6 q3.5 -3.6 7 0 t7 0" stroke="#00395d"/><path d="M2 12 q3.5 -3.6 7 0 t7 0" stroke="#00aeef"/><path d="M2 18 q3.5 -3.6 7 0 t7 0" stroke="#00395d"/></g><text x="25" y="17" font-family="'Inter Tight', sans-serif" font-size="15" font-weight="600" fill="#00395d">BaFin</text></svg></span>
+            <span class="chip"><svg viewBox="0 0 94 24" height="12"><line x1="1" y1="2" x2="1" y2="10" stroke="#00395d" stroke-width="0.8"/><text x="4" y="5.5" font-family="'Inter Tight', sans-serif" font-size="3.2" font-weight="600" fill="#00aeef">AUTORITÉ</text><text x="4" y="9.5" font-family="'Inter Tight', sans-serif" font-size="2.7" font-weight="500" fill="#00aeef">DES MARCHÉS FINANCIERS</text><path d="M1 22.5 L6.5 11 L12 22.5 L9.5 22.5 L6.5 16 L3.5 22.5 Z" fill="#00395d"/><path d="M13.5 11.5 L16.5 11.5 L16.5 22.5 L13.5 22.5 Z" fill="#00395d"/><path d="M16.5 11.5 C20.5 15.5 23 19 25 22.5 L22 22.5 C20.5 19.5 18.5 16.5 16.5 14.5 Z" fill="#00aeef"/><path d="M23 11.5 C21 15 19 18.5 17.5 22.5 L15 22.5 C17 18 19.5 14.5 22 11.5 Z" fill="#00aeef"/><path d="M24 11.5 L24 22.5 L26.8 22.5 L26.8 11.5 Z" fill="#00395d"/><path d="M29 11.5 L36 11.5 L36 14 L31.8 14 L31.8 16.5 L35.5 16.5 L35.5 19 L31.8 19 L31.8 22.5 L29 22.5 Z" fill="#00395d"/></svg></span>
+          </div>
+          <button onclick="openCertificateModal()" class="link shrink-0" data-i18n="dash_view_cert">Zertifikat ansehen</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div class="lg:col-span-2 card p-8 lg:p-10 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-8">
+              <span class="eyebrow" data-i18n="dash_account_title">Hauptkonto — EUR</span>
+              <span class="flex items-center gap-2 text-[10px] tracking-[.18em] uppercase text-[#188a58] font-semibold">
+                <span class="w-2 h-2 rounded-full bg-[#188a58]"></span> <span data-i18n="dash_account_status">Aktiv · Freigegeben</span>
+              </span>
+            </div>
+
+            <div class="flex items-baseline gap-3 mb-2">
+              <span id="accountBalanceDisplay" class="num text-[48px] lg:text-[58px] font-light text-[#001e38] leading-none">167,342.07</span>
+              <span class="text-[13px] tracking-[.2em] font-semibold text-[#00aeef]">EUR</span>
+            </div>
+            <div class="text-[11.5px] text-[#8499ab] mono">
+              USD ≈ $<span id="usdEquivDisplay">180,729.44</span> · SEPA Instant / RT1
+            </div>
+
+            <div class="mt-8 pt-7 border-t border-[#e6ecf2] grid sm:grid-cols-2 gap-6">
+              <div>
+                <div class="text-[9.5px] tracking-[.18em] uppercase text-[#8499ab] font-semibold mb-1.5">IBAN</div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="mono text-[13px] font-medium text-[#00395d]">DE44 5001 0517 5406 2831 92</span>
+                  <button onclick="copyToClipboard('DE44 5001 0517 5406 2831 92','IBAN')" class="text-[#8499ab] hover:text-[#00aeef] transition" data-i18n-title="copy" title="Kopieren"><i class="fa-regular fa-copy text-[12px]"></i></button>
+                </div>
+              </div>
+              <div>
+                <div class="text-[9.5px] tracking-[.18em] uppercase text-[#8499ab] font-semibold mb-1.5">BIC / SWIFT</div>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="mono text-[13px] font-medium text-[#00395d]">BARCDEFFXXX</span>
+                  <button onclick="copyToClipboard('BARCDEFFXXX','BIC')" class="text-[#8499ab] hover:text-[#00aeef] transition" data-i18n-title="copy" title="Kopieren"><i class="fa-regular fa-copy text-[12px]"></i></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 flex flex-wrap gap-3">
+            <button onclick="openTransferModal()" class="btn" data-i18n="btn_transfer">SEPA-Überweisung</button>
+            <button onclick="setStage(2)" class="btn-ghost" data-i18n="btn_findings">Befund</button>
+          </div>
+        </div>
+
+        <div class="card p-8 lg:p-10 flex flex-col justify-between bg-[#fbfcfd]">
+          <div>
+            <div class="eyebrow mb-6" data-i18n="infra_title">Zahlungsinfrastruktur</div>
+            <dl>
+              <div class="row"><dt data-i18n="infra_net">Netzwerk</dt><dd class="mono text-[12px]">EBA RT1 / EPC</dd></div>
+              <div class="row"><dt>SCT Inst</dt><dd class="text-[#188a58] font-semibold" data-i18n="infra_inst_stat">Operativ</dd></div>
+              <div class="row"><dt data-i18n="infra_limit_single">Einzellimit</dt><dd class="mono text-[12px]">100,000.00</dd></div>
+              <div class="row"><dt data-i18n="infra_limit_daily">Tageslimit</dt><dd class="mono text-[12px]">250,000.00</dd></div>
+            </dl>
+          </div>
+          <p class="mt-8 text-[11px] leading-[1.7] text-[#576d80] border-l-2 border-[#00aeef] pl-3.5" data-i18n="infra_note">
+            Überweisungen ab einem Betrag von 100.000,00 EUR unterliegen einer gesonderten Überprüfung durch die Financial Intelligence Unit (FIU) gemäß den geltenden Geldwäschebestimmungen.
+          </p>
+        </div>
+      </div>
+
+      <div class="card p-8">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-5">
+          <div>
+            <div class="eyebrow mb-1.5" data-i18n="tx_title">Kontobewegungen</div>
+            <p class="text-[12px] text-[#576d80]" data-i18n="tx_sub">SEPA Credit Transfers &amp; Abwicklungsaufträge</p>
+          </div>
+          <div class="text-[9.5px] tracking-[.18em] uppercase text-[#8499ab]">
+            <span data-i18n="tx_dossier">Dossier:</span> <span class="text-[#188a58] font-bold" data-i18n="tx_finalized">Finalisiert</span>
+          </div>
+        </div>
+
+        <div class="scroll-x border-t border-[#e6ecf2]">
+          <table class="lh min-w-[720px]">
+            <thead>
+              <tr>
+                <th data-i18n="th_counterparty">Gegenpartei</th>
+                <th data-i18n="th_reference">Verwendungszweck</th>
+                <th data-i18n="th_valuta">Valuta</th>
+                <th data-i18n="th_type">Art</th>
+                <th class="text-right" data-i18n="th_amount">Betrag (EUR)</th>
+              </tr>
+            </thead>
+            <tbody id="transactionTableBody" class="mono"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="pt-6 flex flex-col items-center gap-4">
+        <div class="text-[10px] tracking-[.16em] uppercase text-[#8499ab] text-center leading-loose" data-i18n="footer_compliance">
+          EZB-Infrastruktur für Interbanken-Ausgleichszahlungen · PSD2 / AMLD5 · Einlagensicherung bis 1.000.000,00 €
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer class="border-t border-[#d2dce6] bg-white py-5">
+  <div class="max-w-[1180px] mx-auto px-6 lg:px-10 flex flex-col sm:flex-row items-center justify-center gap-4 text-[10px] tracking-[.18em] uppercase text-[#576d80]">
+    <span class="mono tracking-normal font-semibold text-[#00395d]">Case #F01283425 / 2026</span>
+  </div>
+</footer>
+
+<!-- MODAL: TRANSFER -->
+<div id="transferModal" class="modal hidden">
+  <div class="card w-full max-w-[520px] p-8 relative fade">
+    <button onclick="closeTransferModal()" class="absolute top-6 right-6 text-[#8499ab] hover:text-[#00aeef] transition"><i class="fa-solid fa-xmark"></i></button>
+    <div class="eyebrow mb-2" data-i18n="modal_tr_eyebrow">Zahlungsauftrag</div>
+    <h3 class="text-[20px] font-medium text-[#001e38] tracking-[-.01em] mb-1" data-i18n="modal_tr_title">Neue SEPA-Überweisung</h3>
+    <p class="text-[10.5px] tracking-[.16em] uppercase text-[#8499ab] mono mb-7"><span id="trModalCaseText">#F01283425 / 2026</span> · <span data-i18n="modal_tr_sub">Ausgang</span></p>
+
+    <div id="transferModalAlert" class="hidden mb-6 pl-4 border-l-2 border-[#d9383a] text-[12px] text-[#d9383a]">
+      <span id="transferModalAlertMsg">Ungültiger Betrag.</span>
+    </div>
+
+    <form onsubmit="handleTransferSubmit(event)" class="space-y-6">
+      <div>
+        <label class="eyebrow block mb-2" data-i18n="modal_tr_recipient">Begünstigter</label>
+        <input type="text" id="inputRecipientName" required placeholder="Name des Begünstigten" class="field" data-i18n-ph="modal_tr_recipient_ph">
+      </div>
+      <div>
+        <label class="eyebrow block mb-2">IBAN</label>
+        <input type="text" id="inputRecipientIBAN" required value="" placeholder="DE00 0000 0000 0000 0000 00" class="field mono">
+      </div>
+      <div class="grid grid-cols-2 gap-6">
+        <div>
+          <label class="eyebrow block mb-2">BIC</label>
+          <input type="text" id="inputRecipientBIC" required value="" placeholder="XXXXXXXXXXX" class="field mono">
+        </div>
+        <div>
+          <div class="flex items-baseline justify-between mb-2">
+            <label class="eyebrow" data-i18n="modal_tr_amount">Betrag EUR</label>
+            <button type="button" onclick="setMaxTransferAmount()" class="link">Max</button>
+          </div>
+          <input type="number" id="inputTransferAmount" step="0.01" min="1" required value="" placeholder="0.00" class="field mono">
+        </div>
+      </div>
+      <div>
+        <label class="eyebrow block mb-2" data-i18n="modal_tr_purpose">Verwendungszweck</label>
+        <input type="text" id="inputRemittance" required value="Settlement under Dossier F01283425 / 2026" class="field">
+      </div>
+
+      <div class="flex justify-end gap-3 pt-3">
+        <button type="button" onclick="closeTransferModal()" class="btn-ghost" data-i18n="btn_cancel">Abbrechen</button>
+        <button type="submit" class="btn" data-i18n="btn_authorize">Autorisieren (2FA)</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL: CERTIFICATE -->
+<div id="certificateModal" class="modal hidden">
+  <div class="card w-full max-w-[480px] p-8 relative fade">
+    <button onclick="closeCertificateModal()" class="absolute top-6 right-6 text-[#8499ab] hover:text-[#00aeef] transition"><i class="fa-solid fa-xmark"></i></button>
+    <div class="eyebrow mb-2" data-i18n="modal_cert_eyebrow">Audit-Dossier</div>
+    <h3 class="text-[20px] font-medium text-[#001e38] tracking-[-.01em] mb-7" data-i18n="modal_cert_title">FIU &amp; AMF Compliance &amp; Freigabe</h3>
+
+    <dl class="border-t border-[#e6ecf2]">
+      <div class="row"><dt data-i18n="cert_ref">Referenz</dt><dd class="mono text-[12px] font-semibold text-[#00395d]">#F01283425 / 2026</dd></div>
+      <div class="row"><dt data-i18n="cert_framework">Aufsichtsrahmen</dt><dd>MiFID II / AMLD5</dd></div>
+      <div class="row"><dt data-i18n="cert_val">Freigegebener Wert</dt><dd class="mono text-[12px] font-bold text-[#00395d]" id="certBalance">167,342.07 EUR</dd></div>
+      <div class="row"><dt data-i18n="cert_entity">Rechtsträger</dt><dd id="certEntity">Global Settlement Corp</dd></div>
+      <div class="row"><dt data-i18n="cert_status">Status</dt><dd class="text-[#188a58] font-bold" data-i18n="cert_unrestricted">Unbeschränkt</dd></div>
+      <div class="row"><dt data-i18n="cert_account">Settlement-Konto</dt><dd class="mono text-[12px]">SEPA-EU-CLEAR-092</dd></div>
+    </dl>
+
+    <div class="mt-7 flex gap-2.5 justify-center">
+      <span class="chip"><svg viewBox="0 0 118 24" height="12"><text x="0" y="18" font-family="'Inter Tight', sans-serif" font-size="20" font-weight="700" fill="#00395d">S<tspan fill="#00aeef">€</tspan>PA</text></svg></span>
+      <span class="chip"><svg viewBox="0 0 82 24" height="12"><path d="M17 3.5 C10 3.5 5 7.5 5 13.5 L5 23 L11.5 23 L11.5 17.5 L17 17.5 L17 12.5 L11.5 12.5 C11.5 8.5 13.5 8 17 8 Z" fill="#00395d"/><circle cx="27" cy="4.5" r="3.2" fill="#00395d"/><path d="M23.8 9.5 L30.2 9.5 L30.2 23 C28.2 23 25.5 21.5 23.8 20.2 Z" fill="#00395d"/><path d="M34.5 9.5 L40.8 9.5 L40.8 17.2 C40.8 19.8 42.5 20.5 45 19.2 L45 9.5 L51.2 9.5 L51.2 16.5 C51.2 21.2 46.5 23.5 41.5 22.8 C37 22.2 34.5 19.5 34.5 15.2 Z" fill="#00395d"/><path d="M47.5 15.5 C48.5 18 50.2 19.5 52.5 19.5 C54.5 17 55.5 13 55.5 9.5 L51.2 9.5 C51.2 12.5 50.2 14.5 47.5 15.5 Z" fill="#00aeef"/></svg></span>
+      <span class="chip"><svg viewBox="0 0 88 24" height="12"><g fill="none" stroke-linecap="round" stroke-width="2.2"><path d="M2 6 q3.5 -3.6 7 0 t7 0" stroke="#00395d"/><path d="M2 12 q3.5 -3.6 7 0 t7 0" stroke="#00aeef"/><path d="M2 18 q3.5 -3.6 7 0 t7 0" stroke="#00395d"/></g><text x="25" y="17" font-family="'Inter Tight', sans-serif" font-size="15" font-weight="600" fill="#00395d">BaFin</text></svg></span>
+      <span class="chip"><svg viewBox="0 0 94 24" height="12"><line x1="1" y1="2" x2="1" y2="10" stroke="#00395d" stroke-width="0.8"/><text x="4" y="5.5" font-family="'Inter Tight', sans-serif" font-size="3.2" font-weight="600" fill="#00aeef">AUTORITÉ</text><text x="4" y="9.5" font-family="'Inter Tight', sans-serif" font-size="2.7" font-weight="500" fill="#00aeef">DES MARCHÉS FINANCIERS</text><path d="M1 22.5 L6.5 11 L12 22.5 L9.5 22.5 L6.5 16 L3.5 22.5 Z" fill="#00395d"/><path d="M13.5 11.5 L16.5 11.5 L16.5 22.5 L13.5 22.5 Z" fill="#00395d"/><path d="M16.5 11.5 C20.5 15.5 23 19 25 22.5 L22 22.5 C20.5 19.5 18.5 16.5 16.5 14.5 Z" fill="#00aeef"/><path d="M23 11.5 C21 15 19 18.5 17.5 22.5 L15 22.5 C17 18 19.5 14.5 22 11.5 Z" fill="#00aeef"/><path d="M24 11.5 L24 22.5 L26.8 22.5 L26.8 11.5 Z" fill="#00395d"/><path d="M29 11.5 L36 11.5 L36 14 L31.8 14 L31.8 16.5 L35.5 16.5 L35.5 19 L31.8 19 L31.8 22.5 L29 22.5 Z" fill="#00395d"/></svg></span>
+    </div>
+
+    <div class="mt-7 flex gap-3">
+      <button onclick="copyToClipboard('#F01283425 / 2026-9F8A3C2B', currentLang === 'de' ? 'Hash-Siegel' : currentLang === 'fr' ? 'Sceau de hachage' : 'Hash Seal')" class="btn-ghost flex-1 justify-center" data-i18n="btn_copy_seal">Siegel kopieren</button>
+      <button onclick="closeCertificateModal()" class="btn flex-1" data-i18n="btn_close">Schließen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const translations = {
+  de: {
+    brand_sts_sub: "Regulatorische Kompensation von Investitionsrisiken",
+    header_brand_title: "EZB-Infrastruktur für Interbanken-Ausgleichszahlungen",
+    header_exit: "Abmelden",
+    step1: "01 Authentifizierung",
+    step2: "02 Freigabebefund",
+    step3: "03 Clearing-Portal",
+    auth_eyebrow: "European Banking Clearance",
+    auth_title: "Zugang zum<br>Settlement-Portal",
+    auth_desc: "Öffnen Sie das gesicherte Portal über die untenstehende Schaltfläche, um die Einzelheiten zur Überweisung einzusehen und die Ausweisung einzuleiten.",
+    auth_label_holder: "Name des Kontoinhabers",
+    auth_ph_holder: "Begünstigter oder Gesellschaft",
+    auth_label_case: "Vorgangs- / Dossier-ID",
+    auth_format: "Zulässiges Format:",
+    auth_submit: "Authentifizieren",
+    auth_verifying: "Prüfung läuft",
+    auth_err_id: "Ungültige Vorgangs-ID. Erwartet: F01283425 / 2026",
+    regulated_title: "Reguliert & zertifiziert",
+    report_confidential: "Vertraulich",
+    report_eyebrow: "Offizieller Freigabebefund",
+    report_title: "Aktualisierter Status Ihres SEPA-Verfahrens",
+    report_salutation: "Sehr geehrte(r)",
+    report_placeholder_user: "Kontoinhaber",
+    report_body_1: "die zuständige Clearing-Stelle des SEPA and SWIFT Global Transfer Service hat die Prüfung der vorübergehend hinterlegten Reserve- und Abrechnungsgelder abgeschlossen. Ihr Guthabenstatus sowie die zugehörige Audit-Historie stehen im verifizierten Clearing-Portal zur Einsicht und anschließenden Ausweisung bereit.",
+    field_case_id: "Vorgangs-ID",
+    field_clearance_status: "Status der Freigabe",
+    status_cleared: "Freigegeben & verifiziert",
+    field_standard: "Clearing-Standard",
+    field_depository: "Depot-Status",
+    field_date: "Ausstellungsdatum",
+    report_body_2: "Öffnen Sie das gesicherte Portal über die untenstehende Schaltfläche, um die Einzelheiten zur Überweisung einzusehen und die Ausweisung einzuleiten.",
+    report_portal_btn: "Zum Kontozugang",
+    report_portal_connecting: "Sichere Verbindung",
+    report_2fa_hint: "Halten Sie Ihre Vorgangs-ID",
+    report_2fa_hint_end: "bereit, um die Zweifaktor-Authentifizierung abzuschließen.",
+    report_foot: "SEPA and SWIFT Global Transfer Service · Central Resolution & Settlement Desk<br>Automatisch erstellte Mitteilung — Antworten werden nicht bearbeitet.",
+    dash_mifid_status: "MiFID II / AMLD5 freigegeben für sofortige Interbank-Abrechnung.",
+    dash_view_cert: "Zertifikat ansehen",
+    dash_account_title: "Hauptkonto — EUR",
+    dash_account_status: "Aktiv · Freigegeben",
+    copy: "Kopieren",
+    btn_transfer: "SEPA-Überweisung",
+    btn_findings: "Befund",
+    infra_title: "Zahlungsinfrastruktur",
+    infra_net: "Netzwerk",
+    infra_inst_stat: "Operativ",
+    infra_limit_single: "Einzellimit",
+    infra_limit_daily: "Tageslimit",
+    infra_note: "Überweisungen ab einem Betrag von 100.000,00 EUR unterliegen einer gesonderten Überprüfung durch die Financial Intelligence Unit (FIU) gemäß den geltenden Geldwäschebestimmungen.",
+    tx_title: "Kontobewegungen",
+    tx_sub: "SEPA Credit Transfers & Abwicklungsaufträge",
+    tx_dossier: "Dossier:",
+    tx_finalized: "Finalisiert",
+    th_counterparty: "Gegenpartei",
+    th_reference: "Verwendungszweck",
+    th_valuta: "Valuta",
+    th_type: "Art",
+    th_amount: "Betrag (EUR)",
+    footer_compliance: "EZB-Infrastruktur für Interbanken-Ausgleichszahlungen · PSD2 / AMLD5 · Einlagensicherung bis 1.000.000,00 €",
+    modal_tr_eyebrow: "Zahlungsauftrag",
+    modal_tr_title: "Neue SEPA-Überweisung",
+    modal_tr_sub: "Ausgang",
+    modal_tr_alert: "Unzureichende Deckung oder ungültiger Betrag.",
+    modal_tr_recipient: "Begünstigter",
+    modal_tr_recipient_ph: "Name des Begünstigten",
+    modal_tr_amount: "Betrag EUR",
+    modal_tr_purpose: "Verwendungszweck",
+    btn_cancel: "Abbrechen",
+    btn_authorize: "Autorisieren (2FA)",
+    modal_cert_eyebrow: "Audit-Dossier",
+    modal_cert_title: "FIU & AMF Compliance & Freigabe",
+    cert_ref: "Referenz",
+    cert_framework: "Aufsichtsrahmen",
+    cert_val: "Freigegebener Wert",
+    cert_entity: "Rechtsträger",
+    cert_status: "Status",
+    cert_unrestricted: "Unbeschränkt",
+    cert_account: "Settlement-Konto",
+    btn_copy_seal: "Siegel kopieren",
+    btn_close: "Schließen",
+    today: "Heute",
+    yesterday: "Gestern",
+    toast_ok_auth: "Freigabe geladen",
+    toast_ok_auth_sub: "Verifizierter Befund bereitgestellt.",
+    toast_portal_open: "Portal geöffnet",
+    toast_portal_open_sub: "Gesicherte Sitzung aufgebaut.",
+    toast_logout: "Sitzung beendet",
+    toast_logout_sub: "Verbindung geschlossen.",
+    toast_tx_sent: "Auftrag ausgeführt",
+    toast_copied: "Kopiert",
+    toast_copied_sub: "in die Zwischenablage übernommen."
+  },
+  en: {
+    brand_sts_sub: "Regulatory compensation for investment risks",
+    header_brand_title: "ECB Interbank Compensation Payment Infrastucture",
+    header_exit: "Exit",
+    step1: "01 Authentication",
+    step2: "02 Clearance Findings",
+    step3: "03 Clearing Portal",
+    auth_eyebrow: "European Banking Clearance",
+    auth_title: "Access to the<br>Settlement Portal",
+    auth_desc: "Access the secure portal via the button below to view the transfer details and initiate the verification process.",
+    auth_label_holder: "Account Holder Name",
+    auth_ph_holder: "Beneficiary or Corporate Entity",
+    auth_label_case: "Case / Dossier ID",
+    auth_format: "Permitted Format:",
+    auth_submit: "Authenticate",
+    auth_verifying: "Verification in progress",
+    auth_err_id: "Invalid Case ID. Expected: F01283425 / 2026",
+    regulated_title: "Regulated & Certified",
+    report_confidential: "Confidential",
+    report_eyebrow: "Official Clearance Findings",
+    report_title: "Updated Status of Your SEPA Procedure",
+    report_salutation: "Dear",
+    report_placeholder_user: "Account Holder",
+    report_body_1: "The responsible Clearing Desk of the SEPA and SWIFT Global Transfer Service has completed the audit of the temporarily held reserve and settlement funds. Your balance status and associated audit trail are available for review and subsequent disbursement in the verified Clearing Portal.",
+    field_case_id: "Case ID",
+    field_clearance_status: "Clearance Status",
+    status_cleared: "Cleared & Verified",
+    field_standard: "Clearing Standard",
+    field_depository: "Depository Status",
+    field_date: "Issue Date",
+    report_body_2: "Open the secure portal using the button below to view transfer details and initiate disbursement.",
+    report_portal_btn: "Access Account",
+    report_portal_connecting: "Secure Connection",
+    report_2fa_hint: "Have your Case ID",
+    report_2fa_hint_end: "ready to complete two-factor authentication.",
+    report_foot: "SEPA and SWIFT Global Transfer Service · Central Resolution & Settlement Desk<br>Automatically generated notification — incoming replies are not monitored.",
+    dash_mifid_status: "MiFID II / AMLD5 cleared for instant interbank settlement.",
+    dash_view_cert: "View Certificate",
+    dash_account_title: "Primary Account — EUR",
+    dash_account_status: "Active · Cleared",
+    copy: "Copy",
+    btn_transfer: "SEPA Transfer",
+    btn_findings: "Findings",
+    infra_title: "Payment Infrastructure",
+    infra_net: "Network",
+    infra_inst_stat: "Operational",
+    infra_limit_single: "Single Limit",
+    infra_limit_daily: "Daily Limit",
+    infra_note: "Transfers of EUR 100,000.00 or more are subject to a separate review by the Financial Intelligence Unit (FIU) in accordance with applicable anti-money laundering regulations.",
+    tx_title: "Account Activity",
+    tx_sub: "SEPA Credit Transfers & Settlement Orders",
+    tx_dossier: "Dossier:",
+    tx_finalized: "Finalized",
+    th_counterparty: "Counterparty",
+    th_reference: "Remittance Info",
+    th_valuta: "Value Date",
+    th_type: "Type",
+    th_amount: "Amount (EUR)",
+    footer_compliance: "ECB Interbank Compensation Payment Infrastucture · PSD2 / AMLD5 · Deposit Protection up to EUR 1,000,000.00",
+    modal_tr_eyebrow: "Payment Order",
+    modal_tr_title: "New SEPA Transfer",
+    modal_tr_sub: "Outbound",
+    modal_tr_alert: "Insufficient funds or invalid amount.",
+    modal_tr_recipient: "Beneficiary",
+    modal_tr_recipient_ph: "Beneficiary Name",
+    modal_tr_amount: "Amount EUR",
+    modal_tr_purpose: "Payment Reference",
+    btn_cancel: "Cancel",
+    btn_authorize: "Authorize (2FA)",
+    modal_cert_eyebrow: "Audit Dossier",
+    modal_cert_title: "FIU & AMF Compliance & Clearance",
+    cert_ref: "Reference",
+    cert_framework: "Regulatory Framework",
+    cert_val: "Cleared Value",
+    cert_entity: "Legal Entity",
+    cert_status: "Status",
+    cert_unrestricted: "Unrestricted",
+    cert_account: "Settlement Account",
+    btn_copy_seal: "Copy Seal",
+    btn_close: "Close",
+    today: "Today",
+    yesterday: "Yesterday",
+    toast_ok_auth: "Clearance Loaded",
+    toast_ok_auth_sub: "Verified findings provided.",
+    toast_portal_open: "Portal Opened",
+    toast_portal_open_sub: "Secure session established.",
+    toast_logout: "Session Terminated",
+    toast_logout_sub: "Connection closed.",
+    toast_tx_sent: "Order Executed",
+    toast_copied: "Copied",
+    toast_copied_sub: "copied to clipboard."
+  },
+  fr: {
+    brand_sts_sub: "Compensation réglementaire des risques d'investissement",
+    header_brand_title: "Infrastructure de paiement de compensation interbancaire de la BCE",
+    header_exit: "Déconnexion",
+    step1: "01 Authentification",
+    step2: "02 Rapport d'autorisation",
+    step3: "03 Portail de compensation",
+    auth_eyebrow: "European Banking Clearance",
+    auth_title: "Accès au portail<br>de règlement",
+    auth_desc: "Ouvrez le portail sécurisé via le bouton ci-dessous pour consulter les détails du transfert et lancer la procédure de versement.",
+    auth_label_holder: "Nom du titulaire du compte",
+    auth_ph_holder: "Bénéficiaire ou entité juridique",
+    auth_label_case: "ID du dossier / d'incident",
+    auth_format: "Format autorisé :",
+    auth_submit: "S'authentifier",
+    auth_verifying: "Vérification en cours",
+    auth_err_id: "ID de dossier invalide. Attendu : F01283425 / 2026",
+    regulated_title: "Réglementé & certifié",
+    report_confidential: "Confidentiel",
+    report_eyebrow: "Rapport d'autorisation officiel",
+    report_title: "État actualisé de votre procédure SEPA",
+    report_salutation: "Cher(e)",
+    report_placeholder_user: "Titulaire du compte",
+    report_body_1: "Le bureau de compensation compétent du SEPA and SWIFT Global Transfer Service a finalisé le contrôle des fonds de réserve et de règlement temporairement consignés. L'état de votre solde ainsi que l'historique d'audit sont consultables sur le portail de compensation vérifié pour déblocage immédiat.",
+    field_case_id: "ID du dossier",
+    field_clearance_status: "Statut d'autorisation",
+    status_cleared: "Autorisé & vérifié",
+    field_standard: "Norme de compensation",
+    field_depository: "Statut du dépôt",
+    field_date: "Date d'émission",
+    report_body_2: "Accédez au portail sécurisé via le bouton ci-dessous pour examiner les spécifications du virement et amorcer le transfert des fonds.",
+    report_portal_btn: "Accéder au compte",
+    report_portal_connecting: "Connexion sécurisée",
+    report_2fa_hint: "Veuillez conserver votre ID de dossier",
+    report_2fa_hint_end: "à portée de main pour finaliser l'authentification à deux facteurs.",
+    report_foot: "SEPA and SWIFT Global Transfer Service · Central Resolution & Settlement Desk<br>Notification générée automatiquement — aucune réponse ne sera traitée.",
+    dash_mifid_status: "Conformité MiFID II / AMLD5 validée pour compensation interbancaire instantanée.",
+    dash_view_cert: "Voir le certificat",
+    dash_account_title: "Compte principal — EUR",
+    dash_account_status: "Actif · Autorisé",
+    copy: "Copier",
+    btn_transfer: "Virement SEPA",
+    btn_findings: "Rapport",
+    infra_title: "Infrastructure de paiement",
+    infra_net: "Réseau",
+    infra_inst_stat: "Opérationnel",
+    infra_limit_single: "Plafond par opération",
+    infra_limit_daily: "Plafond journalier",
+    infra_note: "Les virements à partir de 100 000,00 EUR sont soumis à un contrôle spécifique par la Cellule de renseignement financier (FIU) conformément aux directives antiblanchiment.",
+    tx_title: "Mouvements du compte",
+    tx_sub: "Virements SEPA & ordres de règlement",
+    tx_dossier: "Dossier :",
+    tx_finalized: "Finalisé",
+    th_counterparty: "Contrepartie",
+    th_reference: "Motif / Référence",
+    th_valuta: "Date de valeur",
+    th_type: "Type",
+    th_amount: "Montant (EUR)",
+    footer_compliance: "Infrastructure de paiement de compensation interbancaire de la BCE · PSD2 / AMLD5 · Garantie des dépôts jusqu'à 1 000 000,00 €",
+    modal_tr_eyebrow: "Ordre de paiement",
+    modal_tr_title: "Nouveau virement SEPA",
+    modal_tr_sub: "Émission",
+    modal_tr_alert: "Fonds insuffisants ou montant invalide.",
+    modal_tr_recipient: "Bénéficiaire",
+    modal_tr_recipient_ph: "Nom du bénéficiaire",
+    modal_tr_amount: "Montant EUR",
+    modal_tr_purpose: "Motif du virement",
+    btn_cancel: "Annuler",
+    btn_authorize: "Autoriser (2FA)",
+    modal_cert_eyebrow: "Dossier d'audit",
+    modal_cert_title: "Conformité FIU & AMF & Autorisation",
+    cert_ref: "Référence",
+    cert_framework: "Cadre réglementaire",
+    cert_val: "Valeur autorisée",
+    cert_entity: "Entité juridique",
+    cert_status: "Statut",
+    cert_unrestricted: "Sans restriction",
+    cert_account: "Compte de règlement",
+    btn_copy_seal: "Copier le sceau",
+    btn_close: "Fermer",
+    today: "Aujourd'hui",
+    yesterday: "Hier",
+    toast_ok_auth: "Autorisation chargée",
+    toast_ok_auth_sub: "Rapport vérifié mis à disposition.",
+    toast_portal_open: "Portail ouvert",
+    toast_portal_open_sub: "Session sécurisée établie.",
+    toast_logout: "Session clôturée",
+    toast_logout_sub: "Connexion fermée.",
+    toast_tx_sent: "Ordre exécuté",
+    toast_copied: "Copié",
+    toast_copied_sub: "a été copié dans le presse-papiers."
+  }
+};
+
+let currentLang = 'de';
+const REQUIRED_INCIDENT_ID = 'F01283425/2026';
+let currentBalance = 167342.07;
+let sessionName = '';
+let transactions = [
+  { counterparty: 'European Settlement AG', ref: 'INVOICE-2024-8841', isToday: true, timeStr: '09:15', type: 'SCT Inst', amount: '+167,342.07', isPositive: true },
+  { counterparty: 'Deutsche Bundesbank Clearing', ref: 'FEE-Q3-CLEARING', isYesterday: true, timeStr: '', type: 'Debit', amount: '-12.50', isPositive: false }
+];
+
+function setLanguage(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  document.getElementById('langDE').classList.toggle('active', lang === 'de');
+  document.getElementById('langEN').classList.toggle('active', lang === 'en');
+  document.getElementById('langFR').classList.toggle('active', lang === 'fr');
+
+  const dict = translations[lang];
+
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) el.innerHTML = dict[key];
+  });
+
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (dict[key]) el.placeholder = dict[key];
+  });
+
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    if (dict[key]) el.title = dict[key];
+  });
+
+  if (document.getElementById('reportDate').textContent !== '—') {
+    const loc = lang === 'de' ? 'de-DE' : lang === 'fr' ? 'fr-FR' : 'en-US';
+    document.getElementById('reportDate').textContent = new Date().toLocaleDateString(loc, { day: '2-digit', month: '2-digit', year: 'numeric' });
+  }
+
+  renderTransactions();
+}
+
+function setStage(n, opts) {
+  ['stageAuth','stageReport','stagePortal'].forEach((id,i) => {
+    document.getElementById(id).classList.toggle('hidden', i + 1 !== n);
+  });
+  const bs = document.getElementById('brandSTS'), bb = document.getElementById('brandBank');
+  bs.classList.toggle('hidden', n === 3); bs.classList.toggle('flex', n !== 3);
+  bb.classList.toggle('hidden', n !== 3); bb.classList.toggle('flex', n === 3);
+
+  const ua = document.getElementById('headerUserArea');
+  ua.classList.toggle('hidden', n === 1); ua.classList.toggle('flex', n !== 1);
+
+  document.querySelectorAll('[data-step]').forEach(el => {
+    const s = Number(el.dataset.step), on = s === n, past = s < n;
+    el.classList.toggle('text-white', on);
+    el.classList.toggle('text-[#576d80]', !on && !past);
+    el.classList.toggle('text-[#8499ab]', past);
+    const d = el.querySelector('.dot');
+    d.classList.toggle('bg-[#00aeef]', on);
+    d.classList.toggle('bg-[#188a58]', past);
+    d.classList.toggle('bg-[#00395d]', !on && !past);
+  });
+
+  if (!opts || !opts.silent) {
+    const sec = document.getElementById(n === 1 ? 'stageAuth' : n === 2 ? 'stageReport' : 'stagePortal');
+    sec.classList.remove('rise'); void sec.offsetWidth; sec.classList.add('rise');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const rawId = document.getElementById('inputIncidentId').value.trim();
+  // Очищаем # и любые пробелы вокруг слэша, чтобы принимались и 'F01283425 / 2026', и '#F01283425 / 2026'
+  const normalizedId = rawId.replace(/^#/, '').replace(/\s*\/\s*/, '/').toUpperCase();
+  const name = document.getElementById('inputUsername').value.trim();
+  const err = document.getElementById('loginError');
+  const btn = document.getElementById('submitBtn');
+  const txt = document.getElementById('btnText'), ico = document.getElementById('btnIcon'), sp = document.getElementById('btnSpinner');
+
+  if (normalizedId !== REQUIRED_INCIDENT_ID) {
+    err.classList.remove('hidden');
+    document.getElementById('loginErrorMsg').textContent = translations[currentLang].auth_err_id;
+    return;
+  }
+  if (!name) return;
+  err.classList.add('hidden');
+
+  txt.textContent = translations[currentLang].auth_verifying;
+  ico.classList.add('hidden'); sp.classList.remove('hidden'); btn.disabled = true;
+
+  setTimeout(() => {
+    sessionName = name;
+    const formattedId = '#F01283425 / 2026';
+    const loc = currentLang === 'de' ? 'de-DE' : currentLang === 'fr' ? 'fr-FR' : 'en-US';
+    document.getElementById('displayHeaderUser').textContent = name;
+    document.getElementById('reportUserName').textContent = name;
+    document.getElementById('reportIncidentId').textContent = formattedId;
+    document.getElementById('certEntity').textContent = name;
+    document.getElementById('reportDate').textContent = new Date().toLocaleDateString(loc, { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+    txt.textContent = translations[currentLang].auth_submit;
+    ico.classList.remove('hidden'); sp.classList.add('hidden'); btn.disabled = false;
+
+    setStage(2);
+    toast(translations[currentLang].toast_ok_auth, translations[currentLang].toast_ok_auth_sub, 'ok');
+  }, 700);
+}
+
+function enterPortal() {
+  const btn = document.getElementById('portalBtn'), t = document.getElementById('portalBtnText');
+  const i = document.getElementById('portalBtnIcon'), s = document.getElementById('portalBtnSpinner');
+  btn.disabled = true; t.textContent = translations[currentLang].report_portal_connecting; i.classList.add('hidden'); s.classList.remove('hidden');
+
+  setTimeout(() => {
+    btn.disabled = false; t.textContent = translations[currentLang].report_portal_btn; i.classList.remove('hidden'); s.classList.add('hidden');
+    updateBalanceDisplays(); renderTransactions(); setStage(3);
+    toast(translations[currentLang].toast_portal_open, translations[currentLang].toast_portal_open_sub, 'info');
+  }, 750);
+}
+
+function logout() {
+  document.getElementById('inputIncidentId').value = '';
+  document.getElementById('inputUsername').value = '';
+  document.getElementById('loginError').classList.add('hidden');
+  closeTransferModal(); closeCertificateModal(); setStage(1);
+  toast(translations[currentLang].toast_logout, translations[currentLang].toast_logout_sub, 'info');
+}
+
+function updateBalanceDisplays() {
+  document.getElementById('accountBalanceDisplay').textContent = currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('usdEquivDisplay').textContent = (currentBalance * 1.08).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  document.getElementById('certBalance').textContent = currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' EUR';
+}
+
+function renderTransactions() {
+  const tb = document.getElementById('transactionTableBody');
+  tb.innerHTML = '';
+  const d = translations[currentLang];
+  transactions.forEach(t => {
+    let dateStr = '';
+    if (t.isToday) {
+      dateStr = `${d.today}, ${t.timeStr}`;
+    } else if (t.isYesterday) {
+      dateStr = d.yesterday;
+    } else {
+      dateStr = t.timeStr;
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="font-medium text-[#001e38]">${t.counterparty}</td>
+      <td class="text-[#576d80]">${t.ref}</td>
+      <td class="text-[#8499ab]">${dateStr}</td>
+      <td class="text-[9.5px] tracking-[.16em] uppercase ${t.isPositive ? 'text-[#188a58] font-semibold' : 'text-[#8499ab]'}">${t.type}</td>
+      <td class="text-right font-medium ${t.isPositive ? 'text-[#188a58]' : 'text-[#001e38]'}">${t.amount}</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+function openTransferModal() {
+  document.getElementById('inputRecipientName').value = sessionName || '';
+  document.getElementById('inputRecipientIBAN').value = '';
+  document.getElementById('inputRecipientBIC').value = '';
+  document.getElementById('inputTransferAmount').value = '';
+  document.getElementById('inputTransferAmount').max = currentBalance;
+  document.getElementById('transferModalAlert').classList.add('hidden');
+  document.getElementById('transferModal').classList.remove('hidden');
+}
+function closeTransferModal() { document.getElementById('transferModal').classList.add('hidden'); }
+function setMaxTransferAmount() { document.getElementById('inputTransferAmount').value = currentBalance.toFixed(2); }
+function openCertificateModal() { document.getElementById('certificateModal').classList.remove('hidden'); }
+function closeCertificateModal() { document.getElementById('certificateModal').classList.add('hidden'); }
+
+function handleTransferSubmit(e) {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById('inputTransferAmount').value) || 0;
+  const recipient = document.getElementById('inputRecipientName').value.trim();
+  const ref = document.getElementById('inputRemittance').value.trim();
+  const alertBox = document.getElementById('transferModalAlert');
+
+  if (amount <= 0 || amount > currentBalance) {
+    alertBox.classList.remove('hidden');
+    document.getElementById('transferModalAlertMsg').textContent = translations[currentLang].modal_tr_alert;
+    return;
+  }
+  alertBox.classList.add('hidden');
+  currentBalance -= amount;
+
+  const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  transactions.unshift({
+    counterparty: recipient, ref: ref, isToday: true, timeStr: now,
+    type: amount <= 100000 ? 'SCT Inst' : 'SCT Regular',
+    amount: `-${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+    isPositive: false
+  });
+
+  updateBalanceDisplays(); renderTransactions(); closeTransferModal();
+  toast(translations[currentLang].toast_tx_sent, `SEPA: €${amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`, 'ok');
+}
+
+function copyToClipboard(text, label) {
+  const el = document.createElement('input');
+  el.value = text.replace(/\s+/g, '');
+  document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el);
+  toast(translations[currentLang].toast_copied, `${label} ${translations[currentLang].toast_copied_sub}`, 'ok');
+}
+
+function toast(title, msg, type) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastTitle').textContent = title;
+  document.getElementById('toastMsg').textContent = msg;
+  t.style.borderLeftColor = type === 'ok' ? '#188a58' : type === 'err' ? '#d9383a' : '#00aeef';
+  t.classList.remove('translate-x-[130%]');
+  clearTimeout(window.__tt);
+  window.__tt = setTimeout(() => t.classList.add('translate-x-[130%]'), 3600);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeTransferModal(); closeCertificateModal(); } });
+setStage(1, { silent: true });
+</script>
+</body>
+</html>
